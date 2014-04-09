@@ -18,11 +18,11 @@ def solve(has, credit):
 
 def ans(store, a,b):
     if a !=b:
-        first = inventory.index(a)+1
-        second = inventory.index(b)+1
+        first = store.index(a)+1
+        second = store.index(b)+1
     else:
-        first = inventory.index(a)
-        second = inventory[first:].index(b)
+        first = store.index(a)
+        second = store[first:].index(b)
         first +=1
         second += first +1
     
