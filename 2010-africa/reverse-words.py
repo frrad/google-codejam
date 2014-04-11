@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 
 f = open(sys.argv[1], 'r')
@@ -14,3 +16,5 @@ for i, line in enumerate(data):
     temp = line.split(" ")
     temp.reverse()
     print ("Case #%d: " + " ".join(temp)) % (i+1)
+
+
