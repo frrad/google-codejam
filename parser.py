@@ -5,6 +5,11 @@ import sys, os, stat
 boilerplate = '''#!/usr/bin/env python
 import sys
 
+#############
+##Functions##
+#############
+
+
 path = \'input.in\'
 if len(sys.argv)>1: path = sys.argv[1]
 
@@ -22,7 +27,6 @@ while data[-1] == '':
 while data[0] == '':
     data = data[1:]
 
-
 '''
 
 
@@ -31,6 +35,20 @@ def makeInt(string):
         return(int(string))
     except:
         return
+
+def dType(aggregate):
+    dataType = "int"
+    for sample in aggregate:
+        try: 
+            int(sample)
+        except:
+            dataType = "float"
+            try:
+                float(sample)
+            except:
+                dataType = "str"
+                break
+    return dataType            
 
 def classify(bunch):
     data = list(bunch)
@@ -49,17 +67,7 @@ def classify(bunch):
             for item in line:
                 aggregate.append(item)
 
-    dataType = "int"
-    for sample in aggregate:
-        try: 
-            int(sample)
-        except:
-            dataType = "float"
-            try:
-                float(sample)
-            except:
-                dataType = "str"
-                break
+    dataType = dType(aggregate)
             
 
     print "Datatype: %s" % dataType
@@ -73,6 +81,7 @@ def classify(bunch):
 #Default settings which can be changed with flags
 PATH = 'input.in'
 BACKPAD = 0
+TYPE = -1
 def interpret(flags):
     if len(flags) > 1 and flags[1][0] != '-':
         global PATH
@@ -86,6 +95,12 @@ def interpret(flags):
             global BACKPAD
             BACKPAD = int(flag[9:])
             print "Caught flag, setting BACKPAD = %d" % BACKPAD
+
+        #type forces a particular interpretation
+        if len(flag) >= len("-type=1") and flag[:6] == '-type=':
+            global TYPE
+            TYPE = int(flag[6:])
+            print "Caught flag, setting TYPE = %d" % TYPE
 
 
 
@@ -121,9 +136,17 @@ else:
     print "First line integer, assuming number of inputs"
     boilerplate += "trials = int(data[0])\n"
 
+boilerplate += '''
+########
+##Main##
+########
+
+'''
+
+
 length = (len(data) - 1) / trials
 
-if trials*length+1 == len(data):
+if TYPE == 1 or (trials*length+1 == len(data) and TYPE == -1):
     print "Data divides evenly into %d trials of length %d" %(trials, length)
     boilerplate += "#for trial in [0]:\n"    
     boilerplate += "for trial in range(trials):\n"
@@ -146,9 +169,29 @@ if trials*length+1 == len(data):
     for line in range(length):
         boilerplate += "    print \"x"+str(line+1)+" = \"+str(x"+str(line+1)+")\n"
         
-        
-else:
-    quit("Data doesn't divide evenly into trials")
+elif TYPE == 2 or (t2heuristic(data) and TYPE == -1):
+    print "Interpretting data as matrices, with specified dimensions"
+    fodder = []
+    rows = int(data[1].split(" ")[0])
+    point = 2
+    skip = rows + 2
+    while point < len(data):
+        if point == skip:
+            rows = int(data[point].split(" ")[0])
+            skip += rows + 1
+        else:
+            for letter in data[point].split(" "): fodder.append(letter)
+        point += 1
+    datatype = dType(fodder)
+    print "Datatype is %s" % datatype
+    boilerplate += "trial = 1\n"
+    boilerplate += "blockstart = 2\n"
+    boilerplate += "while blockstart < len(data):\n"
+    boilerplate += "    print \"Case #%d: \" %trial\n"
+    boilerplate += "    blockend = blockstart + int(data[blockstart-1].split(\" \")[0])\n"
+    boilerplate += "    x = [map(%s, line.split(\" \")) for line in data[blockstart:blockend]]\n" % datatype
+    boilerplate += "    print \"x = \",x\n"
+    boilerplate += "    blockstart, trial = blockend+1, trial + 1\n"
 
 
 
