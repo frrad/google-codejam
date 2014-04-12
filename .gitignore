@@ -53,3 +53,5 @@ coverage.xml
 docs/_build/
 
 output
+*.in
+*.out
