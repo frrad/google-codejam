@@ -10,6 +10,9 @@ import sys
 #############
 
 
+##############
+##File Input##
+##############
 path = \'input.in\'
 if len(sys.argv)>1: path = sys.argv[1]
 
@@ -78,6 +81,44 @@ def classify(bunch):
 
     return isList, dataType
 
+
+def t2heuristic(length, data):
+    print "Testing for matrices"
+
+    point = 0 
+    count = 0
+
+    while point < len(data):
+        spec = data[point].split(" ")
+        if len(spec) != 2:
+            print "Dimension specification has wrong length: ", spec
+            return False
+        if dType(spec) != "int":
+            print "Dimension specification is not an integer: ", spec
+            return False
+
+        rows = int(spec[0])
+        cols = int(spec[1])
+        for x in range(point + 1, point + 1 + rows):
+            if len(data[x].split(" ")) != cols:
+                print "Row doesn't have specified length: ", data[x]
+                return False
+
+        point += rows + 1 
+        count += 1
+
+    if count != length:
+        print "Failed: wrong number of matrices"
+        return False
+
+    if point == len(data):
+        print "Passed."
+        return True
+    else: 
+        print "Failed: overshot last length"
+        return False
+
+
 #Default settings which can be changed with flags
 PATH = 'input.in'
 BACKPAD = 0
@@ -140,36 +181,12 @@ boilerplate += '''
 ########
 ##Main##
 ########
-
 '''
 
 
 length = (len(data) - 1) / trials
 
-if TYPE == 1 or (trials*length+1 == len(data) and TYPE == -1):
-    print "Data divides evenly into %d trials of length %d" %(trials, length)
-    boilerplate += "#for trial in [0]:\n"    
-    boilerplate += "for trial in range(trials):\n"
-    boilerplate += "    print \"Case #%d:\" % (trial +1)\n\n"
-    for line in range(length):
-        print line+1
-        gather = []
-        for trial in range(trials):
-            gather.append(data[trial*length + line+1])
-        #print gather
-        category = classify(gather)
-        boilerplate += "    x%d = " % (line+1)
-        if not category[0]: #if it's not a list
-            boilerplate += "%s(data[trial*%d + %d])\n" % (category[1], length, line+1)
-        else: #it is a list
-            boilerplate += "map(%s, data[trial*%d + %d].split(\" \"))\n" % (category[1], length, line+1)
-
-    boilerplate += "\n"
-
-    for line in range(length):
-        boilerplate += "    print \"x"+str(line+1)+" = \"+str(x"+str(line+1)+")\n"
-        
-elif TYPE == 2 or (t2heuristic(data) and TYPE == -1):
+if TYPE == 2 or (t2heuristic(trials, data[1:]) and TYPE == -1):
     print "Interpretting data as matrices, with specified dimensions"
     fodder = []
     rows = int(data[1].split(" ")[0])
@@ -184,15 +201,40 @@ elif TYPE == 2 or (t2heuristic(data) and TYPE == -1):
         point += 1
     datatype = dType(fodder)
     print "Datatype is %s" % datatype
-    boilerplate += "trial = 1\n"
+    boilerplate += "trial = 0\n"
     boilerplate += "blockstart = 2\n"
+    boilerplate += "#while trial == 0:\n"
     boilerplate += "while blockstart < len(data):\n"
-    boilerplate += "    print \"Case #%d: \" %trial\n"
     boilerplate += "    blockend = blockstart + int(data[blockstart-1].split(\" \")[0])\n"
     boilerplate += "    x = [map(%s, line.split(\" \")) for line in data[blockstart:blockend]]\n" % datatype
+    boilerplate += "    blockstart, trial = blockend+1, trial + 1\n\n"
+    boilerplate += "    print \"Case #%d: \" %trial\n"
     boilerplate += "    print \"x = \",x\n"
-    boilerplate += "    blockstart, trial = blockend+1, trial + 1\n"
 
+elif TYPE == 1 or (trials*length+1 == len(data) and TYPE == -1):
+    print "Data divides evenly into %d trials of length %d" %(trials, length)
+    boilerplate += "#for trial in [0]:\n"    
+    boilerplate += "for trial in range(trials):\n"
+    for line in range(length):
+        print line+1
+        gather = []
+        for trial in range(trials):
+            gather.append(data[trial*length + line+1])
+        #print gather
+        category = classify(gather)
+        boilerplate += "    x%d = " % (line+1)
+        if not category[0]: #if it's not a list
+            boilerplate += "%s(data[trial*%d + %d])\n" % (category[1], length, line+1)
+        else: #it is a list
+            boilerplate += "map(%s, data[trial*%d + %d].split(\" \"))\n" % (category[1], length, line+1)
+
+    boilerplate += "\n    print \"Case #%d:\" % (trial +1)\n"
+
+    for line in range(length):
+        boilerplate += "    print \"x"+str(line+1)+" = \"+str(x"+str(line+1)+")\n"
+        
+else: 
+    quit("Fell through, type not recognized.")
 
 
 outpath = "parsed." + PATH + ".py"
