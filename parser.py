@@ -64,22 +64,40 @@ def classify(bunch):
 
     print "Datatype: %s" % dataType
 
-    if dataType == "str": 
+    if dataType == "str" and isList: 
         isList = False
-        print "Ignoring previous assesment: data will not be treated as string"
+        print "Ignoring previous assesment: data will not be treated as list"
 
     return isList, dataType
 
-    
+#Default settings which can be changed with flags
+PATH = 'input.in'
+BACKPAD = 0
+def interpret(flags):
+    if len(flags) > 1 and flags[1][0] != '-':
+        global PATH
+        PATH = flags[1]
+        print "Caught flag, setting PATH = %s" % PATH
+    for flag in flags:
+        if flag[0] != '-': continue
+
+        #backpad adds specified number of lines padding to end of file
+        if len(flag) >= len("-backpad=1") and flag[:9] == '-backpad=':
+            global BACKPAD
+            BACKPAD = int(flag[9:])
+            print "Caught flag, setting BACKPAD = %d" % BACKPAD
 
 
-path = 'input.in'
-if len(sys.argv)>1: path = sys.argv[1]
+
+
+
+
+interpret(sys.argv)
 
 try: 
-    f = open(path, 'r')
+    f = open(PATH, 'r')
 except:
-    quit("Error opening file: %s" % path)
+    quit("Error opening file: %s" % PATH)
 
 data = f.read().splitlines()
 f.close()
@@ -89,6 +107,10 @@ while data[-1] == '':
     data = data[:-1]
 while data[0] == '':
     data = data[1:]
+
+if BACKPAD != 0:
+    for x in range(BACKPAD): data.append('')
+    boilerplate += "for x in range(%d): data.append('')\n" % BACKPAD
 
 
 trials = makeInt(data[0])
@@ -103,6 +125,7 @@ length = (len(data) - 1) / trials
 
 if trials*length+1 == len(data):
     print "Data divides evenly into %d trials of length %d" %(trials, length)
+    boilerplate += "#for trial in [0]:\n"    
     boilerplate += "for trial in range(trials):\n"
     boilerplate += "    print \"Case #%d:\" % (trial +1)\n\n"
     for line in range(length):
@@ -118,7 +141,10 @@ if trials*length+1 == len(data):
         else: #it is a list
             boilerplate += "map(%s, data[trial*%d + %d].split(\" \"))\n" % (category[1], length, line+1)
 
-        boilerplate += "    print \"x"+str(line+1)+" = \"+str(x"+str(line+1)+")\n\n"
+    boilerplate += "\n"
+
+    for line in range(length):
+        boilerplate += "    print \"x"+str(line+1)+" = \"+str(x"+str(line+1)+")\n"
         
         
 else:
@@ -126,7 +152,7 @@ else:
 
 
 
-outpath = "parsed." + path + ".py"
+outpath = "parsed." + PATH + ".py"
 f = open(outpath, 'w')
 f.write(boilerplate)
 #set permissions 744
