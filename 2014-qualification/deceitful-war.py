@@ -5,18 +5,9 @@ def cheat(naomi, ken):
     ken.sort()
 
     while len(naomi) > 0:
-        while  len(ken) >0 and (ken[-1] > naomi[-1] or naomi[0] < ken[0]):
-
-            if ken[-1] > naomi[-1]:
-                ken.pop()
-                naomi.pop(0)
-                #print "+1 for ken"
-
-
-            if len(ken) >0 and naomi[0] < ken[0]:
-                naomi.pop(0)
-                ken.pop()
-                #print "+1 for ken (type2)"
+        while len(ken) > 0 and   ken[-1] > naomi[-1]:
+            ken.pop()
+            naomi.pop(0)
 
         if len(ken) >0 and max(naomi) > max(ken): #should be!
             naomi.pop()
