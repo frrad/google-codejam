@@ -1,6 +1,9 @@
+#!/usr/bin/env python
+
+import sys
+
 def cheat(naomi, ken):
     nscore = 0
-
     naomi.sort()
     ken.sort()
 
@@ -15,12 +18,9 @@ def cheat(naomi, ken):
             #print "+1 for naomi"
             nscore +=1 
 
-
-
     return nscore
 
 def fair(naomi,ken):
-
     nscore = 0
 
     naomi.sort()
@@ -28,7 +28,6 @@ def fair(naomi,ken):
 
     while len(naomi) > 0:
         nplay = naomi.pop(0)
-        #print nplay
         for x in range(len(ken)):
             if ken[x] > nplay:
                 ken.pop(x)
@@ -37,14 +36,19 @@ def fair(naomi,ken):
             ken.pop(0)
             nscore +=1
 
-            #print naomi, ken
-
     return nscore
 
 
-f = open('input.in', 'r')
-data = f.read().split('\n')
-#print data
+path = 'input.in'
+if len(sys.argv)>1: path = sys.argv[1]
+
+try:
+    f = open(path, 'r')
+except:
+    quit("Error opening file: %s" % path)
+
+data = f.read().splitlines()
+f.close()
 
 length = int(data[0])
 for x in range(length):

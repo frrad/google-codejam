@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+
+import sys
+
 memo = dict()
 
 #when can I buy nth factory, assuming buying all
@@ -22,9 +26,16 @@ def best(C,F,X):
         else:
             return bestTime
     
+path = 'input.in'
+if len(sys.argv)>1: path = sys.argv[1]
 
-f = open('input.in' , 'r')
-data = f.read().split('\n')
+try:
+    f = open(path, 'r')
+except:
+    quit("Error opening file: %s" % path)
+
+data = f.read().splitlines()
+f.close()
 
 instances = int(data[0])
 #print instances

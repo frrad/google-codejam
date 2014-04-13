@@ -1,5 +1,18 @@
-f = open('testin.in', 'r')
-data = f.read().split('\n')
+#!/usr/bin/env python
+
+import sys
+
+path = 'input.in'
+if len(sys.argv)>1: path = sys.argv[1]
+
+try:
+    f = open(path, 'r')
+except:
+    quit("Error opening file: %s" % path)
+
+data = f.read().splitlines()
+f.close()
+
 
 #print data
 cases = int(data[0])

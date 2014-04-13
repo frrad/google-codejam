@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+
+import sys
+
 def solve(m,n, squares):
     if squares ==1:
         return [[True if x==0 and y==0 else False for x in range(m)] for y in range(n)]
@@ -7,13 +11,6 @@ def solve(m,n, squares):
 
     if n==1:
         return [[True if x < squares else False for x in range(m)] for y in range(n)]
-
-    # if m==2 and squares ==2:
-    #     return [[True if y==0 else False for x in range(m)] for y in range(n)]
-
-    # if n==2 and squares ==2:
-    #     return [[True if x ==0 else False for x in range(m)] for y in range(n)]
-
 
     for i in range(2,m+1):
         for j in range(2,n+1):
@@ -41,8 +38,17 @@ def show(x):
     for line in pre:
         print "".join(line)
 
-f = open('input.in', 'r')
-data = f.read().split('\n')
+path = 'input.in'
+if len(sys.argv)>1: path = sys.argv[1]
+
+try:
+    f = open(path, 'r')
+except:
+    quit("Error opening file: %s" % path)
+
+data = f.read().splitlines()
+f.close()
+
 
 size = int(data[0])
 for x in range(size):
