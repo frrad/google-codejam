@@ -57,24 +57,16 @@ def classify(bunch):
     data = list(bunch)
     alist =  [ line.split(" ") for line in data]
     isList =  max(map(len, alist)) > 1
-    if isList:
-        print "Data is a list"
-    else:
-        print "Data not list"
-
     if not isList:
         aggregate = data
     else:
         aggregate = []
         for line in alist:
             for item in line:
-                aggregate.append(item)
+                if item != '':
+                    aggregate.append(item)
 
     dataType = dType(aggregate)
-            
-
-    print "Datatype: %s" % dataType
-
     if dataType == "str" and isList: 
         isList = False
         print "Ignoring previous assesment: data will not be treated as list"
@@ -101,7 +93,7 @@ def t2heuristic(length, data):
         cols = int(spec[1])
         for x in range(point + 1, point + 1 + rows):
             if len(data[x].split(" ")) != cols:
-                print "Row doesn't have specified length: ", data[x]
+                print "Fail: row doesn't have specified length: ", data[x]
                 return False
 
         point += rows + 1 
@@ -118,6 +110,44 @@ def t2heuristic(length, data):
         print "Failed: overshot last length"
         return False
 
+#Find first working rule after start. Force specl = spec length if not -1
+def generalHeuristic(trials, data, start = 0, specl = -1):
+    _, dt = classify(data[0])
+    if dt != 'int': return None
+
+    spec = map(int, data[0].split(" "))
+
+    if specl != -1 and specl != len(spec): return None
+    specl = len(spec)
+
+    for form in range(start, len(formats)):
+        potential = formats[form]
+        predictedJump = potential(spec)
+        if predictedJump == -1 or predictedJump > len(data) + 1:
+            continue
+        if predictedJump + 1 == len(data):
+            if trials == 1:
+                return form
+            else:
+                continue
+        if generalHeuristic(trials - 1, data[predictedJump + 1:], form, specl) == form:
+            return form
+        
+
+    
+    print "Failed general heuristic"
+    return None
+
+
+formats = [
+    lambda x: -1 if len(x) < 2 else x[0] + x[1],
+    lambda x: -1 if len(x) < 2 else x[1] + 1
+]
+
+formatStrings = [
+    'spec[0] + spec[1]',
+    'spec[1] + 1'
+]
 
 #Default settings which can be changed with flags
 PATH = 'input.in'
@@ -142,10 +172,6 @@ def interpret(flags):
             global TYPE
             TYPE = int(flag[6:])
             print "Caught flag, setting TYPE = %d" % TYPE
-
-
-
-
 
 
 interpret(sys.argv)
@@ -211,17 +237,35 @@ if TYPE == 2 or (t2heuristic(trials, data[1:]) and TYPE == -1):
     boilerplate += "    print \"Case #%d: \" %trial\n"
     boilerplate += "    print \"x = \",x\n"
 
+elif TYPE ==3 or (generalHeuristic(trials, data[1:]) is not None and TYPE == -1):
+    case = generalHeuristic(trials, data[1:])
+    print "Matched on `general' case", case
+    
+    boilerplate += "data = data[1:]\n"
+    boilerplate += "trial = 0\n"
+    boilerplate += "#while trial == 0:\n"
+    boilerplate += "while len(data) > 0:\n"
+    boilerplate += "    spec = map(int, data[0].split(\" \"))\n"
+    boilerplate += "    specl = %s\n" % formatStrings[case]
+    boilerplate += "    x = data[1:specl + 1]\n"
+    boilerplate += "    data = data[specl + 1:]\n"
+    boilerplate += "    trial += 1\n\n"
+    boilerplate += "    print \"Case #%d: \" %trial\n"
+    boilerplate += "    print \"spec = \",spec\n"
+    boilerplate += "    print \"x = \",x\n"
+
+
 elif TYPE == 1 or (trials*length+1 == len(data) and TYPE == -1):
     print "Data divides evenly into %d trials of length %d" %(trials, length)
     boilerplate += "#for trial in [0]:\n"    
     boilerplate += "for trial in range(trials):\n"
     for line in range(length):
-        print line+1
         gather = []
         for trial in range(trials):
             gather.append(data[trial*length + line+1])
         #print gather
         category = classify(gather)
+        print line+1, category[1], "(set)" if category[0] else ""
         boilerplate += "    x%d = " % (line+1)
         if not category[0]: #if it's not a list
             boilerplate += "%s(data[trial*%d + %d])\n" % (category[1], length, line+1)
