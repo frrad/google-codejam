@@ -141,12 +141,14 @@ def generalHeuristic(trials, data, start = 0, specl = -1):
 
 formats = [
     lambda x: -1 if len(x) < 2 else x[0] + x[1],
-    lambda x: -1 if len(x) < 2 else x[1] + 1
+    lambda x: -1 if len(x) < 2 else x[1] + 1,
+    lambda x: -1 if len(x) < 1 else x[0],
 ]
 
 formatStrings = [
     'spec[0] + spec[1]',
-    'spec[1] + 1'
+    'spec[1] + 1',
+    'spec[0]'
 ]
 
 #Default settings which can be changed with flags
