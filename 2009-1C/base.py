@@ -4,7 +4,7 @@ import sys
 #############
 ##Functions##
 #############
-def improve(base, threat):
+def compute(base, threat):
     translate = dict()
     avail = set(range(base))
     
@@ -22,9 +22,6 @@ def improve(base, threat):
         exponent += 1
         
     return ans
-
-def small(base, length):
-    return base**(length-1)
 
 ##############
 ##File Input##
@@ -58,10 +55,5 @@ for trial in range(trials):
     print "Case #%d:" % (trial +1),
     
     base = max(len(set(alien)), 2)
-    best = improve(base, alien)
+    print compute(base, alien)
     
-    while small(base, len(alien)) < best:
-        base += 1
-        best = min(best, improve(base, alien))
-
-    print best
