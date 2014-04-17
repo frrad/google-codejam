@@ -123,7 +123,7 @@ def generalHeuristic(trials, data, start = 0, specl = -1):
     for form in range(start, len(formats)):
         potential = formats[form]
         predictedJump = potential(spec)
-        if predictedJump == -1 or predictedJump > len(data) + 1:
+        if predictedJump == -1 or predictedJump + 1 > len(data):
             continue
         if predictedJump + 1 == len(data):
             if trials == 1:
